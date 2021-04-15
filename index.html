@@ -19,55 +19,104 @@
 </head>
 <body>
 
-<div id ="app">
-    <table id="example" class="table table-striped table-bordered" cellspacing="0" width="100%">
+<div id="app">
+    <information-table :data="employees"
+                       v-if="renderComponent"
+    >
+
+    </information-table>
+</div>
+
+<script>
+
+    Vue.component('information-table', {
+        template: `
+          <div class="table-wrapper-scroll-y my-custom-scrollbar">
+      <table id="dataTable" class="table table-striped table-bordered" cellspacing="0" width="100%">
         <thead>
         <tr>
-            <th class="th-sm">Id</th>
-            <th class="th-sm">Imie</th>
-            <th class="th-sm">Nazwisko</th>
-            <th class="th-sm">Adres</th>
-            <th class="th-sm">Email</th>
-            <th class="th-sm">Wiek</th>
-            <th class="th-sm">Plec</th>
-            <th class="th-sm">Wynagrodzenie</th>
-            <th class="th-sm">Rola</th>
+          <th class="th-sm">Id</th>
+          <th class="th-sm">Imie</th>
+          <th class="th-sm">Nazwisko</th>
+          <th class="th-sm">Adres</th>
+          <th class="th-sm">Email</th>
+          <th class="th-sm">Wiek</th>
+          <th class="th-sm">Plec</th>
+          <th class="th-sm">Wynagrodzenie</th>
+          <th class="th-sm">Rola</th>
+          <th class="th-sm">Usun</th>
         </tr>
         </thead>
         <tbody>
-        <tr v-for="user in employees">
-            <td>{{user.id}}</td>
-            <td>{{user.name}}</td>
-            <td>{{user.surname}}</td>
-            <td>{{user.adress}}</td>
-            <td>{{user.email}}</td>
-            <td>{{user.age}}</td>
-            <td>{{user.gender}}</td>
-            <td>{{user.pension}}</td>
-            <td>{{user.role}}</td>
+        <tr v-for="user in data" :key='user.id'>
+          <td>{{user.id}}</td>
+          <td>{{user.name}}</td>
+          <td>{{user.surname}}</td>
+          <td>{{user.adress}}</td>
+          <td>{{user.email}}</td>
+          <td>{{user.age}}</td>
+          <td>{{user.gender}}</td>
+          <td>{{user.pension}}</td>
+          <td>{{user.role}}</td>
+          <td v-on:click="test(user.id)"><button>Usun</button></td>
         </tr>
         </tbody>
-    </table>
-</div>
-<script>
+      </table>
+          </div>
+`, props: ['data'],
+        methods: {
+            test: function(id){
+                this.$root.removeUser(id);
+                this.forceRerender();
+            },
+            forceRerender() {
+                this.$root.updateComponent();
+            }
+        },
+    });
     var app = new Vue({
         el: '#app',
-        data: {
-            employees: null
+        data:{
+            employees: [],
+            renderComponent: true,
         },
         mounted () {
-            axios.get('http://localhost:8081/employees')
+            axios.get('http://localhost:8082/employees')
                 .then(response => this.employees = (response.data))
-            .then(() => {
-                $(document).ready(function () {
-                    $("#example").DataTable({
-                        // "sPaginationType": "bootstrap",
+                .then(() => {
+                    $(document).ready(function () {
+                        $("#dataTable").DataTable({
+
+                        });
+                    });
+                })
+
+        },
+        methods: {
+            removeUser: function(id){
+                axios.delete('http://localhost:8082/employee?id='+id)
+                    .then(response => this.employees = response.data)
+                .then(() => this.updateComponent)
+                    .then(() => {
+                        $(document).ready(function () {
+                            $("#dataTable").DataTable({
+
+                            });
+                        });
+                    })
+            },
+            updateComponent: function (){
+                this.renderComponent = false;
+                this.$nextTick(() => {
+                    this.renderComponent = true;
+                    let dataTable = $("#dataTable").DataTable({
+
                     });
                 });
-            })
-
-        }
+            }
+        },
     });
+
 </script>
 
 </body>
