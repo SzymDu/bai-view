@@ -20,11 +20,7 @@
 <body>
 
 <div id="app">
-    <information-table :data="employees"
-                       v-if="renderComponent"
-    >
-
-    </information-table>
+    <information-table :data="employees">></information-table>
 </div>
 
 <script>
@@ -67,12 +63,8 @@
         methods: {
             test: function(id){
                 this.$root.removeUser(id);
-                this.forceRerender();
-            },
-            forceRerender() {
-                this.$root.updateComponent();
             }
-        },
+        }
     });
     var app = new Vue({
         el: '#app',
@@ -81,7 +73,7 @@
             renderComponent: true,
         },
         mounted () {
-            axios.get('http://localhost:8082/employees')
+            axios.get('http://localhost:8081/employees')
                 .then(response => this.employees = (response.data))
                 .then(() => {
                     $(document).ready(function () {
@@ -94,27 +86,10 @@
         },
         methods: {
             removeUser: function(id){
-                axios.delete('http://localhost:8082/employee?id='+id)
+                axios.delete('http://localhost:8081/employee?id='+id)
                     .then(response => this.employees = response.data)
-                .then(() => this.updateComponent)
-                    .then(() => {
-                        $(document).ready(function () {
-                            $("#dataTable").DataTable({
-
-                            });
-                        });
-                    })
-            },
-            updateComponent: function (){
-                this.renderComponent = false;
-                this.$nextTick(() => {
-                    this.renderComponent = true;
-                    let dataTable = $("#dataTable").DataTable({
-
-                    });
-                });
             }
-        },
+        }
     });
 
 </script>
