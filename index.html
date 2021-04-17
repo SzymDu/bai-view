@@ -19,12 +19,11 @@
 <div id="app">
 
     <div class="modal-vue-test">
-        <button @click="showModal = true">show</button>
-        <div class="overlay" v-if="showModal" @click="showModal = false"></div>
+        <button @click="showModal = true">Dodaj pracownika</button>
+        <div class="overlay" v-if="showModal" @click="showModal = false, userContext={}"></div>
         <div class="modal-add-form" v-if="showModal">
-            <button class="close" @click="showModal = false">x</button>
+            <button class="close" @click="showModal = false, userContext={}">x</button>
             <form-component :context="userContext" v-if="showModal"></form-component>
-
         </div>
     </div>
     <information-table :data="employees">></information-table>
@@ -45,35 +44,51 @@
     <input type="email" v-model="employee.email" id="email " class="form-control mb-4" placeholder="E-mail">
      <input type="text" v-model="employee.adress" id="address" class="form-control" placeholder="Adress">
     <input type="number" v-model="employee.age" id="wiek" class="form-control" placeholder="Wiek">
-
-    <select class="form-select" aria-label="Default select example" id="select">
-        <option value="" disabled="" selected="">Plec</option>
-        <option value="Male">Meżczyzna</option>
-        <option value="Female">Kobieta</option>
-    </select>
+    <input type="text" v-model="employee.gender" id="plec" class="form-control" placeholder="Plec">
      <input type="number" v-model="employee.pension" id="pensja" class="form-control" placeholder="Wynagrodzenie">
     <input type="text" v-model="employee.role" id="rola" class="form-control" placeholder="Rola">
-    <button class="btn btn-info my-4 btn-block" @click="addUser()" type="submit">Wyślij</button>
+    <button class="btn btn-info my-4 btn-block" :disabled=!allFieldsSet @click="addUser()" type="submit">Wyślij</button>
 </form>
         `,
         data: function(){
-               return  {employee :{
+            if(Object.keys(this.context).length > 0) {
+                return {
+                    employee: {
+                        ...this.context
+                    }
+                }
+            }
+                return {
+                    employee: {
                         id: null,
                         name: '',
-                        surname:'',
-                        email:'',
-                         adress:'',
-                        age:null,
-                        gender:'',
-                        pension:null,
+                        surname: '',
+                        email: '',
+                        adress: '',
+                        age: null,
+                        gender: '',
+                        pension: '',
                         role: ''
-                }
+                    }
                 }
         },
         methods:{
             addUser: function(){
-                this.$root.addToTable(this._data.employee);
+                this.$root.addToTable(this._data.employee, this.context);
         }
+        },
+        props: ['context'],
+        computed: {
+            allFieldsSet(){
+                return (this.employee.name.length > 0 &&
+                    this.employee.surname.length > 0 &&
+                this.employee.email.length > 0 &&
+                this.employee.adress.length > 0 &&
+                this.employee.gender.length > 0 &&
+                this.employee.role.length > 0
+                );
+
+            }
         }
     })
 
@@ -167,14 +182,22 @@
                 axios.delete('http://localhost:8081/employee?id='+id)
                     .then(response => this.employees = response.data)
             },
-            addToTable: function(data){
-                axios.post('http://localhost:8081/employee', data)
-                    .then(response => this.employees = response.data)
-                .then( () => this.showModal = false)
+            addToTable: function(data, context){
+                if(Object.keys(context).length > 0){
+                    axios.put('http://localhost:8081/employee?id=' + this.userContext.id, data)
+                        .then(response => this.employees = response.data)
+                        .then( () => this.showModal = false)
+                    .then(() => this.userContext = {})
+                } else {
+                    axios.post('http://localhost:8081/employee', data)
+                        .then(response => this.employees = response.data)
+                        .then( () => this.showModal = false)
+                }
             },
             updateUser: function(id){
                 axios.get('http://localhost:8081/employee?id='+id)
                 .then(response => this.userContext = response.data)
+                .then(() => this.showModal = true)
             }
         }
     });
