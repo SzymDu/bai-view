@@ -7,27 +7,80 @@
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="https://unpkg.com/vue-chartjs/dist/vue-chartjs.min.js"></script>
     <script src='https://code.jquery.com/jquery-1.12.3.js'></script>
-    <script src='https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js'></script>
-    <script src="https://cdn.datatables.net/1.10.12/js/dataTables.bootstrap.min.js" charset="utf-8"></script>
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/dataTables.bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.1.0/css/responsive.bootstrap.min.css">
-    <script>
 
-    </script>
+    <link rel="stylesheet" href="table.css">
 </head>
 <body>
 
 <div id="app">
+
+    <div class="modal-vue-test">
+        <button @click="showModal = true">show</button>
+        <div class="overlay" v-if="showModal" @click="showModal = false"></div>
+        <div class="modal-add-form" v-if="showModal">
+            <button class="close" @click="showModal = false">x</button>
+            <form-component :context="userContext" v-if="showModal"></form-component>
+
+        </div>
+    </div>
     <information-table :data="employees">></information-table>
+
+
+
 </div>
 
 <script>
 
+    Vue.component('form-component',{
+        template: `
+        <form class="border border-light p-5">
+    <p class="h4 mb-4 text-center">Pracownik</p>
+    <input type="text" v-model="employee.name" id="imie" class="form-control" placeholder="Imie">
+    <input type="text" v-model="employee.surname" id="nazwisko" class="form-control" placeholder="Nazwisko">
+
+    <input type="email" v-model="employee.email" id="email " class="form-control mb-4" placeholder="E-mail">
+     <input type="text" v-model="employee.adress" id="address" class="form-control" placeholder="Adress">
+    <input type="number" v-model="employee.age" id="wiek" class="form-control" placeholder="Wiek">
+
+    <select class="form-select" aria-label="Default select example" id="select">
+        <option value="" disabled="" selected="">Plec</option>
+        <option value="Male">Meżczyzna</option>
+        <option value="Female">Kobieta</option>
+    </select>
+     <input type="number" v-model="employee.pension" id="pensja" class="form-control" placeholder="Wynagrodzenie">
+    <input type="text" v-model="employee.role" id="rola" class="form-control" placeholder="Rola">
+    <button class="btn btn-info my-4 btn-block" @click="addUser()" type="submit">Wyślij</button>
+</form>
+        `,
+        data: function(){
+               return  {employee :{
+                        id: null,
+                        name: '',
+                        surname:'',
+                        email:'',
+                         adress:'',
+                        age:null,
+                        gender:'',
+                        pension:null,
+                        role: ''
+                }
+                }
+        },
+        methods:{
+            addUser: function(){
+                this.$root.addToTable(this._data.employee);
+        }
+        }
+    })
+
     Vue.component('information-table', {
         template: `
           <div class="table-wrapper-scroll-y my-custom-scrollbar">
+          <input type="text" v-model="filter" id="exampleForm2" style="width: 200px" placeholder="Szukaj..." class="form-control">
       <table id="dataTable" class="table table-striped table-bordered" cellspacing="0" width="100%">
         <thead>
         <tr>
@@ -41,10 +94,11 @@
           <th class="th-sm">Wynagrodzenie</th>
           <th class="th-sm">Rola</th>
           <th class="th-sm">Usun</th>
+          <th class="th-sm">Edycja</th>
         </tr>
         </thead>
         <tbody>
-        <tr v-for="user in data" :key='user.id'>
+        <tr v-for="user in filteredRows" :key='user.id'>
           <td>{{user.id}}</td>
           <td>{{user.name}}</td>
           <td>{{user.surname}}</td>
@@ -54,40 +108,73 @@
           <td>{{user.gender}}</td>
           <td>{{user.pension}}</td>
           <td>{{user.role}}</td>
-          <td v-on:click="test(user.id)"><button>Usun</button></td>
+          <td v-on:click="removeFromTable(user.id)"><button>Usun</button></td>
+          <td v-on:click="updateUserInTable(user.id)"><button>Edytuj</button></td>
         </tr>
         </tbody>
       </table>
           </div>
 `, props: ['data'],
         methods: {
-            test: function(id){
+            removeFromTable: function(id){
                 this.$root.removeUser(id);
+            },
+            updateUserInTable: function(id){
+                this.$root.updateUser(id);
             }
-        }
+        },
+        data: function () {
+            return {
+                filter: ''
+            }
+        },
+        computed: {
+            filteredRows() {
+                return this.data.filter(row => {
+                    const name = row.name.toString().toLowerCase();
+                    const surname = row.surname.toString().toLowerCase();
+                    const role = row.role.toString().toLowerCase();
+                    const adress = row.adress.toString().toLowerCase();
+                    const email = row.email.toString().toLowerCase();
+                    const pension = row.pension.toString().toLowerCase();
+                    const searchTerm = this.filter.toLowerCase();
+                    return name.includes(searchTerm) ||
+                        surname.includes(searchTerm) ||
+                        role.includes(searchTerm) ||
+                        adress.includes(searchTerm) ||
+                        email.includes(searchTerm) ||
+                        pension.includes(searchTerm)
+                });
+            }
+        },
     });
     var app = new Vue({
         el: '#app',
         data:{
             employees: [],
             renderComponent: true,
+            tableFilter: '',
+            showModal: false,
+            userContext: {}
         },
         mounted () {
             axios.get('http://localhost:8081/employees')
-                .then(response => this.employees = (response.data))
-                .then(() => {
-                    $(document).ready(function () {
-                        $("#dataTable").DataTable({
-
-                        });
-                    });
-                })
+                .then(response => this.employees = (response.data));
 
         },
         methods: {
             removeUser: function(id){
                 axios.delete('http://localhost:8081/employee?id='+id)
                     .then(response => this.employees = response.data)
+            },
+            addToTable: function(data){
+                axios.post('http://localhost:8081/employee', data)
+                    .then(response => this.employees = response.data)
+                .then( () => this.showModal = false)
+            },
+            updateUser: function(id){
+                axios.get('http://localhost:8081/employee?id='+id)
+                .then(response => this.userContext = response.data)
             }
         }
     });
