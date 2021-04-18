@@ -18,16 +18,7 @@
 
 <div id="app">
     <div class="container">
-
-    <div class="modal-vue-test">
-        <button @click="showModal = true">Dodaj pracownika</button>
-        <div class="overlay" v-if="showModal" @click="showModal = false, userContext={}"></div>
-        <div class="modal-add-form" v-if="showModal">
-            <button class="close" @click="showModal = false, userContext={}">x</button>
-            <form-component :context="userContext" v-if="showModal"></form-component>
-        </div>
-        <information-table :data="employees"></information-table>
-    </div>
+        <information-table :data="employees" :show-modal="showModal" :user-context="userContext"></information-table>
     </div>
 
 </div>
@@ -148,8 +139,17 @@
               </li>
             </ul>
           </nav>
+
+          <div class="modal-vue-test">
+            <button @click="showModal = true">Dodaj pracownika</button>
+            <div class="overlay" v-if="showModal" @click="showModal = false, userContext={}"></div>
+            <div class="modal-add-form" v-if="showModal">
+              <button class="close" @click="showModal = false, userContext={}">x</button>
+              <form-component :context="userContext" v-if="showModal"></form-component>
+            </div>
           </div>
-        `, props: ['data'],
+          </div>
+        `, props: ['data', 'showModal', 'userContext'],
         methods: {
             removeFromTable: function (id) {
                 this.$root.removeUser(id);
