@@ -7,6 +7,7 @@
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="https://unpkg.com/vue-chartjs/dist/vue-chartjs.min.js"></script>
     <script src='https://code.jquery.com/jquery-1.12.3.js'></script>
+    <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/dataTables.bootstrap.min.css">
@@ -19,7 +20,7 @@
 <div id="app">
     <navbar-component></navbar-component>
     <div class="container">
-        <information-table :data="employees" :show-modal="showModal" :user-context="userContext"></information-table>
+        <router-view :data="employees" :show-modal="showModal" :user-context="userContext"></router-view>
     </div>
 
 </div>
@@ -42,8 +43,8 @@
 
                     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                         <ul class="nav navbar-nav">
-                            <li class="active"><a href="#">Pracownicy <span class="sr-only">(current)</span></a></li>
-                            <li><a href="#">Zarobki</a></li>
+                            <li><router-link to="/employees" @click="showModal = false, userContext={}">Pracownicy</router-link></li>
+                            <li><router-link to="/chart">Zarobki</router-link></li>
                         </ul>
                     </div>
                 </div>
@@ -109,7 +110,7 @@
         }
     })
 
-    Vue.component('information-table', {
+    const InformationTable = Vue.component('information-table', {
         template: `
           <div class="table-wrapper-scroll-y my-custom-scrollbar">
           <input type="text" v-model="filter" id="exampleForm2" style="width: 200px" placeholder="Szukaj..."
@@ -236,9 +237,36 @@
                 return this.paginate(this.filteredRows);
             }
         },
+        mounted () {
+            this.$root.showModal = false;
+            this.$root.userContext = {};
+        }
     });
+
+    const Chart = Vue.component('chart-component',{
+        template: `<div>Test</div>`,
+        methods:{},
+        props: [],
+        computed: {}
+    })
+
+    const router = new VueRouter({
+        routes: [
+            {
+                path: '/employees',
+                component: InformationTable,
+                props: true
+            },
+            {
+                path: '/chart',
+                component: Chart
+            }
+        ]
+    })
+
     var app = new Vue({
         el: '#app',
+        router,
         data:{
             employees: [],
             renderComponent: true,
