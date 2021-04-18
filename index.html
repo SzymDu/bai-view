@@ -17,18 +17,9 @@
 <body>
 
 <div id="app">
-
-    <div class="modal-vue-test">
-        <button @click="showModal = true">Dodaj pracownika</button>
-        <div class="overlay" v-if="showModal" @click="showModal = false, userContext={}"></div>
-        <div class="modal-add-form" v-if="showModal">
-            <button class="close" @click="showModal = false, userContext={}">x</button>
-            <form-component :context="userContext" v-if="showModal"></form-component>
-        </div>
+    <div class="container">
+        <information-table :data="employees" :show-modal="showModal" :user-context="userContext"></information-table>
     </div>
-    <information-table :data="employees">></information-table>
-
-
 
 </div>
 
@@ -95,52 +86,106 @@
     Vue.component('information-table', {
         template: `
           <div class="table-wrapper-scroll-y my-custom-scrollbar">
-          <input type="text" v-model="filter" id="exampleForm2" style="width: 200px" placeholder="Szukaj..." class="form-control">
-      <table id="dataTable" class="table table-striped table-bordered" cellspacing="0" width="100%">
-        <thead>
-        <tr>
-          <th class="th-sm">Id</th>
-          <th class="th-sm">Imie</th>
-          <th class="th-sm">Nazwisko</th>
-          <th class="th-sm">Adres</th>
-          <th class="th-sm">Email</th>
-          <th class="th-sm">Wiek</th>
-          <th class="th-sm">Plec</th>
-          <th class="th-sm">Wynagrodzenie</th>
-          <th class="th-sm">Rola</th>
-          <th class="th-sm">Usun</th>
-          <th class="th-sm">Edycja</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr v-for="user in filteredRows" :key='user.id'>
-          <td>{{user.id}}</td>
-          <td>{{user.name}}</td>
-          <td>{{user.surname}}</td>
-          <td>{{user.adress}}</td>
-          <td>{{user.email}}</td>
-          <td>{{user.age}}</td>
-          <td>{{user.gender}}</td>
-          <td>{{user.pension}}</td>
-          <td>{{user.role}}</td>
-          <td v-on:click="removeFromTable(user.id)"><button>Usun</button></td>
-          <td v-on:click="updateUserInTable(user.id)"><button>Edytuj</button></td>
-        </tr>
-        </tbody>
-      </table>
+          <input type="text" v-model="filter" id="exampleForm2" style="width: 200px" placeholder="Szukaj..."
+                 class="form-control">
+          <table id="dataTable" class="table table-striped table-bordered" cellspacing="10px" width="100%">
+            <thead>
+            <tr>
+              <th class="th-sm">Id</th>
+              <th class="th-sm">Imie</th>
+              <th class="th-sm">Nazwisko</th>
+              <th class="th-sm">Adres</th>
+              <th class="th-sm">Email</th>
+              <th class="th-sm">Wiek</th>
+              <th class="th-sm">Plec</th>
+              <th class="th-sm">Wynagrodzenie</th>
+              <th class="th-sm">Rola</th>
+              <th class="th-sm">Usun</th>
+              <th class="th-sm">Edycja</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="user in displayedPosts" :key='user.id'>
+              <td v-on:click="updateUserInTable(user.id)">{{ user.id }}</td>
+              <td v-on:click="updateUserInTable(user.id)">{{ user.name }}</td>
+              <td v-on:click="updateUserInTable(user.id)">{{ user.surname }}</td>
+              <td v-on:click="updateUserInTable(user.id)">{{ user.adress }}</td>
+              <td v-on:click="updateUserInTable(user.id)">{{ user.email }}</td>
+              <td v-on:click="updateUserInTable(user.id)">{{ user.age }}</td>
+              <td v-on:click="updateUserInTable(user.id)">{{ user.gender }}</td>
+              <td v-on:click="updateUserInTable(user.id)">{{ user.pension }}</td>
+              <td v-on:click="updateUserInTable(user.id)">{{ user.role }}</td>
+              <td v-on:click="removeFromTable(user.id)">
+                <button>Usun</button>
+              </td>
+              <td v-on:click="updateUserInTable(user.id)">
+                <button>Edytuj</button>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+          <nav aria-label="Page navigation example">
+            <ul class="pagination">
+              <li class="page-item">
+                <button type="button" class="page-link" v-if="page != 1" @click="page--"> Previous</button>
+              </li>
+              <li class="page-item">
+                <button type="button" class="page-link" v-for="pageNumber in pages.slice(page-1, page+5)"
+                        @click="page = pageNumber"> {{ pageNumber }}
+                </button>
+              </li>
+              <li class="page-item">
+                <button type="button" @click="page++" v-if="page < pages.length" class="page-link"> Next</button>
+              </li>
+            </ul>
+          </nav>
+
+          <div class="modal-vue-test">
+            <button @click="showModal = true">Dodaj pracownika</button>
+            <div class="overlay" v-if="showModal" @click="showModal = false, userContext={}"></div>
+            <div class="modal-add-form" v-if="showModal">
+              <button class="close" @click="showModal = false, userContext={}">x</button>
+              <form-component :context="userContext" v-if="showModal"></form-component>
+            </div>
           </div>
-`, props: ['data'],
+          </div>
+        `, props: ['data', 'showModal', 'userContext'],
         methods: {
-            removeFromTable: function(id){
+            removeFromTable: function (id) {
                 this.$root.removeUser(id);
             },
-            updateUserInTable: function(id){
+            updateUserInTable: function (id) {
                 this.$root.updateUser(id);
+            },
+            setPages() {
+                this.pages = []
+                let numberOfPages = Math.ceil(this.filteredRows.length / this.perPage);
+                for (let index = 1; index <= numberOfPages; index++) {
+                    this.pages.push(index);
+                }
+            },
+            paginate(posts) {
+                let page = this.page;
+                let perPage = this.perPage;
+                let from = (page * perPage) - perPage;
+                let to = (page * perPage);
+                return posts.slice(from, to);
+            }
+        },
+        watch: {
+            data() {
+                this.setPages();
+            },
+            filter(){
+                this.setPages();
             }
         },
         data: function () {
             return {
-                filter: ''
+                filter: '',
+                page: 1,
+                perPage: 5,
+                pages: [],
             }
         },
         computed: {
@@ -160,6 +205,9 @@
                         email.includes(searchTerm) ||
                         pension.includes(searchTerm)
                 });
+            },
+            displayedPosts () {
+                return this.paginate(this.filteredRows);
             }
         },
     });
