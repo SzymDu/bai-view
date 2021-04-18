@@ -247,9 +247,18 @@
     Vue.component('average_age' , {
         extends: VueChartJs.Bar,
         computed: {
-            bar_chart_labels () {return this.$root.employees.map((employee_role) => {return employee_role.role})},
+            bar_chart_labels () {return [...new Set(this.$root.employees.map(employee => employee.role))]},
 
-            bar_chart_values () {return this.$root.employees.map((employee_age) => {return employee_age.age})},
+            bar_chart_values () {
+                const countedPersonPerRole = [...this.$root.employees.reduce((acc, e) => acc.set(e.role, (acc.get(e.role) || 0) + 1), new Map()).values()];
+                const countedAgePerRole = [...this.$root.employees.reduce((acc, e) => acc.set(e.role, (acc.get(e.role) || 0) + e.age), new Map()).values()];
+                let result = [];
+                for(let i =0; i< countedPersonPerRole.length; i ++){
+                    result.push(parseInt(countedAgePerRole[i]/countedPersonPerRole[i]));
+                }
+                return result;
+
+            },
 
             bar_chart_data () {
                 return {
@@ -269,9 +278,17 @@
     Vue.component('average_earnings' , {
         extends: VueChartJs.Bar,
         computed: {
-            bar_chart_labels () {return this.$root.employees.map((employee_role) => {return employee_role.role})},
+            bar_chart_labels () {return [...new Set(this.$root.employees.map(employee => employee.role))]},
 
-            bar_chart_values () {return this.$root.employees.map((employee_age) => {return employee_age.pension})},
+            bar_chart_values () {
+                const countedPersonPerRole = [...this.$root.employees.reduce((acc, e) => acc.set(e.role, (acc.get(e.role) || 0) + 1), new Map()).values()];
+                const countedPensionPerRole = [...this.$root.employees.reduce((acc, employee) => acc.set(employee.role, (acc.get(employee.pension) || 0) + employee.pension), new Map()).values()];
+                let result = [];
+                for(let i =0; i< countedPersonPerRole.length; i ++){
+                    result.push(parseInt(countedPensionPerRole[i]/countedPersonPerRole[i]));
+                }
+                return result;
+            },
 
             bar_chart_data () {
                 return {
