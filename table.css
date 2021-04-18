@@ -24,10 +24,27 @@
     margin: 0 auto;
     padding: 20px 30px;
     background-color: #fff;
+    overflow-x: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
 }
 
 .modal-vue-test .close{
     position: absolute;
     top: 10px;
     right: 10px;
+}
+button.page-link {
+    display: inline-block;
+}
+button.page-link {
+    font-size: 20px;
+    color: #29b3ed;
+    font-weight: 500;
+}
+.offset{
+    width: 500px !important;
+    margin: 20px auto;
 }
