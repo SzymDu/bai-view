@@ -7,6 +7,7 @@
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="https://unpkg.com/vue-chartjs/dist/vue-chartjs.min.js"></script>
     <script src='https://code.jquery.com/jquery-1.12.3.js'></script>
+    <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue-chartjs@3.5.1/dist/vue-chartjs.min.js"></script>
@@ -20,15 +21,39 @@
 <body>
 
 <div id="app">
+    <navbar-component></navbar-component>
     <div class="container">
-        <information-table :data="employees" :show-modal="showModal" :user-context="userContext"></information-table>
-        <average_age></average_age>
-        <average_earnings></average_earnings>
+        <router-view :data="employees" :show-modal="showModal" :user-context="userContext"></router-view>
     </div>
 
 </div>
 
 <script>
+
+    Vue.component('navbar-component', {
+        template: `
+            <nav class="navbar navbar-default">
+                <div class="container-fluid">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <a class="navbar-brand" href="#">Brand</a>
+                    </div>
+
+                    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                        <ul class="nav navbar-nav">
+                            <li><router-link to="/employees" @click="showModal = false, userContext={}">Pracownicy</router-link></li>
+                            <li><router-link to="/chart">Statystyki</router-link></li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        `
+    })
 
     Vue.component('form-component',{
         template: `
@@ -88,7 +113,7 @@
         }
     })
 
-    Vue.component('information-table', {
+    const InformationTable = Vue.component('information-table', {
         template: `
           <div class="table-wrapper-scroll-y my-custom-scrollbar">
           <input type="text" v-model="filter" id="exampleForm2" style="width: 200px" placeholder="Szukaj..."
@@ -215,10 +240,86 @@
                 return this.paginate(this.filteredRows);
             }
         },
+        mounted () {
+            this.$root.showModal = false;
+            this.$root.userContext = {};
+        }
     });
+
+    Vue.component('average_age' , {
+        extends: VueChartJs.Bar,
+        computed: {
+            bar_chart_labels () {return this.$root.employees.map((employee_role) => {return employee_role.role})},
+
+            bar_chart_values () {return this.$root.employees.map((employee_age) => {return employee_age.age})},
+
+            bar_chart_data () {
+                return {
+                    labels: this.bar_chart_labels,
+                    datasets: [{
+                        label: 'Sredni wiek na danym stanowisku',
+                        data: this.bar_chart_values
+                    }]
+                }
+            },
+        },
+        mounted () {
+            this.renderChart(this.bar_chart_data, {responsive: true, maintainAspectRatio: false})
+        }
+    });
+
+    Vue.component('average_earnings' , {
+        extends: VueChartJs.Bar,
+        computed: {
+            bar_chart_labels () {return this.$root.employees.map((employee_role) => {return employee_role.role})},
+
+            bar_chart_values () {return this.$root.employees.map((employee_age) => {return employee_age.pension})},
+
+            bar_chart_data () {
+                return {
+                    labels: this.bar_chart_labels,
+                    datasets: [{
+                        label: 'Srednie zarobki na danym stanowisku',
+                        data: this.bar_chart_values
+                    }]
+                }
+            },
+        },
+        mounted () {
+            this.renderChart(this.bar_chart_data, {responsive: true, maintainAspectRatio: false})
+        }
+    });
+
+    const Stats = Vue.component('stats-component',{
+        template: `
+            <div>
+              <average_age></average_age>
+              <average_earnings></average_earnings>
+            </div>
+        `,
+        methods:{},
+        props: [],
+        computed: {}
+    })
+
+    const router = new VueRouter({
+        routes: [
+            {
+                path: '/employees',
+                component: InformationTable,
+                props: true
+            },
+            {
+                path: '/chart',
+                component: Stats,
+                props: true
+            }
+        ]
+    })
 
     var app = new Vue({
         el: '#app',
+        router,
         data:{
             employees: [],
             renderComponent: true,
@@ -253,48 +354,6 @@
                 .then(response => this.userContext = response.data)
                 .then(() => this.showModal = true)
             }
-        }
-    });
-    Vue.component('average_age' , {
-        extends: VueChartJs.Bar,
-        computed: {
-            bar_chart_labels () {return this.$root.employees.map((employee_role) => {return employee_role.role})},
-
-            bar_chart_values () {return this.$root.employees.map((employee_age) => {return employee_age.age})},
-
-            bar_chart_data () {
-                return {
-                    labels: this.bar_chart_labels,
-                    datasets: [{
-                        label: 'Sredni wiek na danym stanowisku',
-                        data: this.bar_chart_values
-                    }]
-                }
-            },
-        },
-        mounted () {
-            this.renderChart(this.bar_chart_data, {responsive: true, maintainAspectRatio: false})
-        }
-    });
-    Vue.component('average_earnings' , {
-        extends: VueChartJs.Bar,
-        computed: {
-            bar_chart_labels () {return this.$root.employees.map((employee_role) => {return employee_role.role})},
-
-            bar_chart_values () {return this.$root.employees.map((employee_age) => {return employee_age.pension})},
-
-            bar_chart_data () {
-                return {
-                    labels: this.bar_chart_labels,
-                    datasets: [{
-                        label: 'Srednie zarobki na danym stanowisku',
-                        data: this.bar_chart_values
-                    }]
-                }
-            },
-        },
-        mounted () {
-            this.renderChart(this.bar_chart_data, {responsive: true, maintainAspectRatio: false})
         }
     });
 
