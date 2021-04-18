@@ -9,6 +9,9 @@
     <script src='https://code.jquery.com/jquery-1.12.3.js'></script>
     <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-chartjs@3.5.1/dist/vue-chartjs.min.js"></script>
+
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/dataTables.bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.1.0/css/responsive.bootstrap.min.css">
@@ -21,6 +24,8 @@
     <navbar-component></navbar-component>
     <div class="container">
         <router-view :data="employees" :show-modal="showModal" :user-context="userContext"></router-view>
+        <average_age></average_age>
+        <average_earnings></average_earnings>
     </div>
 
 </div>
@@ -301,6 +306,48 @@
                 .then(response => this.userContext = response.data)
                 .then(() => this.showModal = true)
             }
+        }
+    });
+    Vue.component('average_age' , {
+        extends: VueChartJs.Bar,
+        computed: {
+            bar_chart_labels () {return this.$root.employees.map((employee_role) => {return employee_role.role})},
+
+            bar_chart_values () {return this.$root.employees.map((employee_age) => {return employee_age.age})},
+
+            bar_chart_data () {
+                return {
+                    labels: this.bar_chart_labels,
+                    datasets: [{
+                        label: 'Sredni wiek na danym stanowisku',
+                        data: this.bar_chart_values
+                    }]
+                }
+            },
+        },
+        mounted () {
+            this.renderChart(this.bar_chart_data, {responsive: true, maintainAspectRatio: false})
+        }
+    });
+    Vue.component('average_earnings' , {
+        extends: VueChartJs.Bar,
+        computed: {
+            bar_chart_labels () {return this.$root.employees.map((employee_role) => {return employee_role.role})},
+
+            bar_chart_values () {return this.$root.employees.map((employee_age) => {return employee_age.pension})},
+
+            bar_chart_data () {
+                return {
+                    labels: this.bar_chart_labels,
+                    datasets: [{
+                        label: 'Srednie zarobki na danym stanowisku',
+                        data: this.bar_chart_values
+                    }]
+                }
+            },
+        },
+        mounted () {
+            this.renderChart(this.bar_chart_data, {responsive: true, maintainAspectRatio: false})
         }
     });
 
