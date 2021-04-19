@@ -335,29 +335,29 @@
             userContext: {}
         },
         mounted () {
-            axios.get('http://localhost:8081/employees')
+            axios.get('https://bai-uek.herokuapp.com/employees')
                 .then(response => this.employees = (response.data));
 
         },
         methods: {
             removeUser: function(id){
-                axios.delete('http://localhost:8081/employee?id='+id)
+                axios.delete('https://bai-uek.herokuapp.com/employee?id='+id)
                     .then(response => this.employees = response.data)
             },
             addToTable: function(data, context){
                 if(Object.keys(context).length > 0){
-                    axios.put('http://localhost:8081/employee?id=' + this.userContext.id, data)
+                    axios.put('https://bai-uek.herokuapp.com/employee?id=' + this.userContext.id, data)
                         .then(response => this.employees = response.data)
                         .then( () => this.showModal = false)
                         .then(() => this.userContext = {})
                 } else {
-                    axios.post('http://localhost:8081/employee', data)
+                    axios.post('https://bai-uek.herokuapp.com/employee', data)
                         .then(response => this.employees = response.data)
                         .then( () => this.showModal = false)
                 }
             },
             updateUser: function(id){
-                axios.get('http://localhost:8081/employee?id='+id)
+                axios.get('https://bai-uek.herokuapp.com/employee?id='+id)
                     .then(response => this.userContext = response.data)
                     .then(() => this.showModal = true)
             }
