@@ -346,7 +346,7 @@
             },
             addToTable: function(data, context){
                 if(Object.keys(context).length > 0){
-                    axios.put('http://localhost:8081/employee?id=' + this.userContext.id, data)
+                    axios.put('http://localhost:8081/employee?id=' + context.id, data)
                         .then(response => this.employees = response.data)
                         .then( () => this.showModal = false)
                         .then(() => this.userContext = {})
