@@ -125,15 +125,15 @@
             </thead>
             <tbody>
             <tr v-for="user in displayedPosts" :key='user.id'>
-              <td v-on:click="updateUserInTable(user.id)">{{ user.id }}</td>
-              <td v-on:click="updateUserInTable(user.id)">{{ user.name }}</td>
-              <td v-on:click="updateUserInTable(user.id)">{{ user.surname }}</td>
-              <td v-on:click="updateUserInTable(user.id)">{{ user.adress }}</td>
-              <td v-on:click="updateUserInTable(user.id)">{{ user.email }}</td>
-              <td v-on:click="updateUserInTable(user.id)">{{ user.age }}</td>
-              <td v-on:click="updateUserInTable(user.id)">{{ user.gender }}</td>
-              <td v-on:click="updateUserInTable(user.id)">{{ user.pension }}</td>
-              <td v-on:click="updateUserInTable(user.id)">{{ user.role }}</td>
+              <td >{{ user.id }}</td>
+              <td >{{ user.name }}</td>
+              <td >{{ user.surname }}</td>
+              <td >{{ user.adress }}</td>
+              <td >{{ user.email }}</td>
+              <td >{{ user.age }}</td>
+              <td >{{ user.gender }}</td>
+              <td >{{ user.pension }}</td>
+              <td >{{ user.role }}</td>
               <td v-on:click="removeFromTable(user.id)">
                 <button>Usun</button>
               </td>
